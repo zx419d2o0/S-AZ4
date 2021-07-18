@@ -4,7 +4,8 @@
     <title></title>
     <script type="text/javascript" src="../../../js/jquery-3.2.1.min.js" ></script>
     <script type="text/javascript" src="../../../js/jquery.form.js" ></script>
-	<script type="text/javascript" src="../js/user-defined.js" ></script>
+	<script type="text/javascript" src="../../../js/user-defined.js" ></script>
+
     <script type="text/javascript" src="../js/api.guildwars2.js" ></script>
     <script type="text/javascript">
         var gwSkills = new Gw2Skill()
@@ -210,7 +211,7 @@
             };
             const scriptPath = window.location.search.includes('prod')
             ? 'https://unpkg.com/armory-embeds@^0.x.x/armory-embeds.js'
-            : '../../../js/armory-embeds.js';
+            : '../js/armory-embeds.js';
 
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/armory-embeds@^0.x.x/armory-embeds.js';
