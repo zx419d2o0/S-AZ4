@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MATABATTLE CHS
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://metabattle.com/wiki/*
@@ -15,4 +15,5 @@
 
     // Your code here...
     document.GW2A_EMBED_OPTIONS = {lang: 'zh'};
+    alert(222)
 })();
