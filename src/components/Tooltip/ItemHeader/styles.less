@@ -1,0 +1,38 @@
+@import '../../../styles/base.less';
+
+@borderDark: @_darkergray;
+@borderLight: @_gray;
+
+.itemName {
+  font-size: 16px;
+  height: 40px;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.tooltipIcon {
+  border-radius: 1px;
+  float: left;
+  margin-top: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.border(@colorA, @colorB) {
+  border-left: 1px solid @colorA;
+  border-top: 1px solid @colorA;
+  border-right: 1px solid @colorB;
+  border-bottom: 1px solid @colorB;
+}
+
+.light {
+  .tooltipIcon {
+    .border(lighten(@borderLight, 50%), lighten(@borderDark, 25%));
+  }
+}
+
+.dark {
+  .tooltipIcon {
+    .border(@borderLight, @borderDark);
+  }
+}

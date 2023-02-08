@@ -1,0 +1,243 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="../../../js/jquery-3.2.1.min.js" ></script>
+    <script type="text/javascript" src="../../../js/jquery.form.js" ></script>
+
+    <script type="text/javascript" src="../js/api.guildwars2.js" ></script>
+    <script type="text/javascript">
+        var gwSkills = new Gw2Skill()
+        var gwTraits = new Gw2Trait()
+        var profession_skills = null
+
+        $(document).ready(function(){
+            gwSkills.UpdateAPI()
+            gwTraits.UpdateAPI()
+
+            for (var i in Gw2Profession){
+                $("#SelProfession").append('<option value='+i+'>'+Gw2Profession[i]+'</option>')
+            }
+
+            $("#SelProfession").change(function(){
+                profession_skills = gwSkills.FindSkillsByProfession($("#SelProfession").val())
+            })
+
+            $("#UlModule li").click(function(){
+                if (profession_skills == null){
+                    profession_skills = gwSkills.FindSkillsByProfession($("#SelProfession").val())
+                }
+
+                $("#divSkills").empty()
+
+                switch ($(this).index()){
+                    case 0:
+                        ShowWeaponSkill()
+                        break
+                    case 1:
+                        ShowSlotSkill()
+                        break
+                    case 2:
+                        ShowTrain()
+                        break
+                    case 3:
+                        ShowSpecialSkill()
+                        break    
+                } 
+
+                armoryRefresh()
+            })
+        })
+
+        function objCompare(obj1, obj2){
+            for(var i in obj1){
+                if(obj1[i] != obj2[i]){
+                    return false
+                }
+            }
+            return true
+        }
+
+        function ShowWeaponSkill(){
+            for(var i in profession_skills.weapons){
+                $("#divSkills").append('<div>' + Gw2Weapon[i] + profession_skills.weapons[i].flags + '</div>')
+                var weaSkill_list = []
+                for (var j in profession_skills.weapons[i].skills){
+                    weaSkill_list.push(profession_skills.weapons[i].skills[j].id)
+                }
+                var weaSkill_table = MakeTable(weaSkill_list)
+                for(var j in weaSkill_table){
+                    var skill_html = '<div data-armory-embed="skills" data-armory-ids="' + weaSkill_table[j].join(',') + '"></div>'
+                    $("#divSkills").append(skill_html)                    
+                }
+            }
+        }
+
+        function ShowSlotSkill(){
+            var slot_skills = {}
+            for (var i in profession_skills.skills){
+                if (slot_skills[profession_skills.skills[i].type]){
+                    slot_skills[profession_skills.skills[i].type].push(profession_skills.skills[i])
+                }else{
+                    slot_skills[profession_skills.skills[i].type] = [profession_skills.skills[i]]
+                }
+            }
+            for (var i in slot_skills){
+                $("#divSkills").append('<div>' + i + '</div>')
+                var slotSkill_list = []
+                for (var IndexLslot in slot_skills[i]){
+                    slotSkill_list.push(slot_skills[i][IndexLslot].id)
+                }
+                if (i == "Utility"){
+                    for(var j = 0; j < slotSkill_list.length; j+=4*1){
+                        var slotSkill_table = MakeTable(slotSkill_list.slice(j,j+4))
+                        for(var IndexTslot in slotSkill_table){
+                            var skill_html = '<div data-armory-embed="skills" data-armory-ids="' + slotSkill_table[IndexTslot].join(',') + '"></div>'
+                            $("#divSkills").append(skill_html)
+                        }
+                    }
+                }else{
+                    var slotSkill_table = MakeTable(slotSkill_list)
+                    for(var IndexTslot in slotSkill_table){
+                        var skill_html = '<div data-armory-embed="skills" data-armory-ids="' + slotSkill_table[IndexTslot].join(',') + '"></div>'
+                        $("#divSkills").append(skill_html)
+                    }
+                }
+            }
+        }
+
+        function ShowTrain(){
+            var train_html = '<div data-armory-embed="specializations" data-armory-ids="' + profession_skills.specializations.join(',') + '"></div>'
+            $("#divSkills").append(train_html)
+        }
+
+        function ShowSpecialSkill(){
+            for(var i in profession_skills.special){
+                var specialSkill_table = MakeTable(profession_skills.special[i])
+                for(var j in specialSkill_table){
+                    var skill_html = '<div data-armory-embed="skills" data-armory-ids="' + specialSkill_table[j].join(',') + '"></div>'
+                    $("#divSkills").append(skill_html)
+                }              
+            }
+        }
+
+        function MakeTable(Ids, FatherIds){
+            if (!FatherIds){
+                FatherIds = Ids
+            }
+            var result = [Ids]
+            var derive_ids = Ids.map(function(e){return -1})
+            var isHas = false
+            var lastLength = 0
+            for(var IndexId in Ids){
+                var id = Ids[IndexId]
+                var fid = FatherIds[IndexId]
+                if(profession_skills.combos[id] || profession_skills.combos[fid]){
+                    for(var IndexCbs in profession_skills.combos[fid]){
+                        var combo = profession_skills.combos[fid][IndexCbs]
+                        if (combo.pre_id == id){
+                            isHas = true
+                            derive_ids[IndexId] = combo.id
+                            lastLength = IndexId*1 + 1
+                            break
+                        }
+                    }
+                }
+            }
+            if(isHas){
+                result.push(derive_ids.slice(0, lastLength))
+                var local_derive = MakeTable(derive_ids.slice(0, lastLength), FatherIds)
+                if (!objCompare(result[result.length-1], local_derive[local_derive.length-1])){
+                    result.push(local_derive[local_derive.length-1])
+                }
+            }
+            return result
+        }
+
+        // function MakeDiv(item){
+        //     var innerHTML
+        //     ItemInfo = Gw2SkillsZH[item.id]
+        //     innerHTML = '<div style="float:left" class="tip1" gw2tips=\''
+        //     innerHTML += '<div><ul style="list-style-type:none">'
+        //     innerHTML += '<li>' + ItemInfo.name + ItemInfo.chat_link
+        //     innerHTML += '<button class="chat_copy" data-clipboard-text="' + ItemInfo.chat_link + '">复制</button></li>'
+        //     innerHTML += '<br>'
+        //     innerHTML += '<li>' + ItemInfo.description + '</li>'
+        //     innerHTML += '<br>'
+        //     for (var i in ItemInfo.facts){
+        //         innerHTML += '<li><img style="width:20px" src="' + ItemInfo.facts[i].icon + '">'
+        //         innerHTML += ItemInfo.facts[i].text + ":"
+        //         if (ItemInfo.facts[i].value){
+        //             innerHTML += ItemInfo.facts[i].value
+        //         }
+        //         if (ItemInfo.facts[i].description){
+        //             innerHTML += ItemInfo.facts[i].description
+
+        //         }
+        //         innerHTML += '</li>'
+        //     }
+        //     innerHTML += '</ul></div>'
+        //     innerHTML += '\'><img style="width:50px" src="' + ItemInfo.icon + '">'
+        //     innerHTML += '</div>'
+
+        //     return innerHTML
+        // }
+
+        // function MakeDivTrain(item){
+        //     var innerHTML
+        //     ItemInfo = Gw2traitsZH[item.trait_id]
+        //     innerHTML = '<div style="float:left" class="tip1" TierAndOrder="' + ItemInfo.tier + ItemInfo.order + '" gw2tips=\''
+        //     innerHTML += '<div><ul style="list-style-type:none">'
+        //     innerHTML += '<li>' + ItemInfo.name + ItemInfo.chat_link
+        //     innerHTML += '<button class="chat_copy" data-clipboard-text="' + ItemInfo.chat_link + '">复制</button></li>'
+        //     innerHTML += '<br>'
+        //     innerHTML += '<li>' + ItemInfo.description + '</li>'
+        //     innerHTML += '<br>'
+        //     for (var i in ItemInfo.facts){
+        //         innerHTML += '<li><img style="width:20px" src="' + ItemInfo.facts[i].icon + '">'
+        //         innerHTML += ItemInfo.facts[i].text + ":"
+        //         if (ItemInfo.facts[i].value){
+        //             innerHTML += ItemInfo.facts[i].value
+        //         }
+        //         if (ItemInfo.facts[i].description){
+        //             innerHTML += ItemInfo.facts[i].description
+
+        //         }
+        //         innerHTML += '</li>'
+        //     }
+        //     innerHTML += '</ul></div>'
+        //     innerHTML += '\'><img style="width:50px" src="' + ItemInfo.icon + '">'
+        //     innerHTML += '</div>'
+
+        //     return innerHTML
+        // }
+
+        function armoryRefresh(){
+            document.GW2A_EMBED_OPTIONS = {
+              lang: 'zh',
+              persistToLocalStorage: false,
+            };
+            const scriptPath = window.location.search.includes('prod')
+            ? 'https://unpkg.com/armory-embeds@^0.x.x/armory-embeds.js'
+            : '../js/armory-embeds.js';
+
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/armory-embeds@^0.x.x/armory-embeds.js';
+            script.async = true;
+            document.body.appendChild(script);
+        }
+    </script>
+</head>
+<body>
+    <div style="float: left">
+        <select id="SelProfession"></select>
+        <ul id="UlModule" style="list-style: none">
+            <li>武器</li>
+            <li>职业技能</li>
+            <li>特性</li>
+            <li>特有技能</li>
+        </ul>
+    </div>
+    <div id="divSkills" style="float: right;width: 90%"></div>
+</body>
+</html>
