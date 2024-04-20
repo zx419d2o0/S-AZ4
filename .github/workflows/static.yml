@@ -11,11 +11,11 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: npm install package
-        run: |
-          npm install
+        run: npm install
           
       - name: build storybook
         run: |
+          export NODE_OPTIONS=--openssl-legacy-provider
           npm run build-storybook --output-dir dist
           
       - name: Deploy
