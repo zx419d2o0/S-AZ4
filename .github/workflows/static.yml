@@ -16,7 +16,7 @@ jobs:
           
       - name: build storybook
         run: |
-          build-storybook --output-dir dist
+          npm run build-storybook --output-dir dist
           
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
