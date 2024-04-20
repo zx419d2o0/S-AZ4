@@ -1,0 +1,25 @@
+name: publish S-AZ4 index.html
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: npm install package
+        run: |
+          npm install
+          
+      - name: build storybook
+        run: |
+          build-storybook --output-dir dist
+          
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.AZ_GITHUB_TOKEN }}
+          publish_dir: ./dist
