@@ -79,6 +79,18 @@ const config = {
       analyzerMode: 'static',
     }),
   ],
+
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'), // 告诉 devServer 从哪里提供内容
+    port: 8082, // 设置 devServer 的端口号
+    proxy: {
+      '/qobuz': { // 设置代理规则，将以 /api 开头的请求代理到目标地址
+        target: 'https://www.qobuz.com', // 设置代理目标地址
+        changeOrigin: true, // 修改请求头中的 host 为代理目标地址的 host
+        secure: false, // 如果代理目标地址是 https，需要设置为 false
+      },
+    },
+  },
 };
 
 module.exports = config;
