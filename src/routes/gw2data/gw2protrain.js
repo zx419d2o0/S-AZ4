@@ -183,18 +183,36 @@ export default class Gw2protrain extends Component<*> {
   }
 
   render() {
-    const ldiv_style = { width: '33%', float: 'left' }
-    const rdiv_style = { width: '33%', float: 'right' }
-    const bdiv_style = { clear: 'both' }
+    const isMobile = window.innerWidth < 768;
+
+    const containerStyle = {
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      gap: '12px',
+    };
+
+    const colStyle = isMobile
+      ? { width: '100%' }
+      : { flex: 1 };
+
     return (
       <div>
-        < ProfessionFunc show_data={(profession) => { this.show_data(profession) }} />
-        <div>
-          <div style={ldiv_style}><Gw2WeaponFunc weapon_skills={this.state.weapons} /></div>
-          <div style={ldiv_style}><Gw2SkillFunc skills={this.state.skills} /></div>
-          <div style={rdiv_style}><Gw2SpeFunc ids={this.state.specialization_ids} /></div>
-        </div >
-      </div >
+        <ProfessionFunc show_data={(profession) => { this.show_data(profession) }} />
+
+        <div style={containerStyle}>
+          <div style={colStyle}>
+            <Gw2WeaponFunc weapon_skills={this.state.weapons} />
+          </div>
+
+          <div style={colStyle}>
+            <Gw2SkillFunc skills={this.state.skills} />
+          </div>
+
+          <div style={colStyle}>
+            <Gw2SpeFunc ids={this.state.specialization_ids} />
+          </div>
+        </div>
+      </div>
     );
   }
 }

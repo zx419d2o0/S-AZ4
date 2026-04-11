@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import JSZip from 'jszip';
 import JinjierArtCard from './jinjierArtcard'
+import { action } from '@storybook/addon-actions';
 
 // Source type enum: controls dataset switching and SQL generation
 const SOURCE = {
@@ -28,7 +29,6 @@ const loadSqlJs = () => {
 
 class Jdb extends Component {
   state = {
-    result: '点击按钮测试 sql.js 环境',
     loading: false,
     rows: [],
 
@@ -86,13 +86,16 @@ class Jdb extends Component {
     }
 
     const databaseUrl = `https://jinjier.art/${match[1]}`;
+    action('初始化')('数据地址解析成功', match[1].split('.')[0]);
 
     const SQL = await initSqlJs({
       locateFile: () =>
         'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm',
     });
+    action('初始化')('sql.js运行时初始化完成');
 
     const buffer = await fetch(databaseUrl).then(r => r.arrayBuffer());
+    action('初始化')('数据包下载完成');
 
     const zip = await JSZip.loadAsync(buffer);
 
@@ -101,6 +104,7 @@ class Jdb extends Component {
       .async('arraybuffer');
 
     this.db = new SQL.Database(new Uint8Array(sqliteBuffer));
+    action('初始化')('数据库加载完成');
   };
 
   // Load filter metadata (years / categories) for dropdown menus
@@ -196,23 +200,22 @@ class Jdb extends Component {
   
   // Execute generated SQL and transform results into UI rows
   handleRunSql = async () => {
-    this.setState({ loading: true, result: '执行中...' });
+    this.setState({ loading: true });
 
     if (!this.db) {
       this.setState({
         loading: false,
-        result: '数据库尚未初始化完成，请稍后再试',
       });
       return;
     }
 
     try {
       const sql = this.state.currentSql;
+      action('run')('sql', sql);
 
       if (!sql) {
         this.setState({
           loading: false,
-          result: '请先选择条件生成SQL',
           rows: [],
         });
         return;
@@ -236,13 +239,11 @@ class Jdb extends Component {
 
       this.setState({
         loading: false,
-        result: JSON.stringify(result, null, 2),
         rows,
       });
     } catch (error) {
       this.setState({
         loading: false,
-        result: `执行失败: ${error.message}`,
         rows: [],
       });
     }
@@ -337,7 +338,7 @@ class Jdb extends Component {
   };
 
   render() {
-    const { result, loading } = this.state;
+    const { loading } = this.state;
 
     return (
       <div style={{ padding: '24px' }}>
@@ -359,21 +360,10 @@ class Jdb extends Component {
           </select>
 
           <button onClick={this.handleRunSql} disabled={loading}>
-            {loading ? '执行中...' : '执行 SQL'}
+            {loading ? '执行中...' : '查看'}
           </button>
 
         </div>
-
-        <pre style={{
-          padding: '12px',
-          background: '#111',
-          color: '#0f0',
-          fontSize: '12px',
-          whiteSpace: 'pre-wrap',
-          marginBottom: '16px'
-        }}>
-          {this.state.currentSql}
-        </pre>
 
         <div
           style={{

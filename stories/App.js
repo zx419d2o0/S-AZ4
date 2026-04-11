@@ -7,6 +7,7 @@ import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import { reducers } from '../src';
 import Tooltip from '../src/components/Tooltip';
+import FloatingButton from '../src/components/FloatingButton';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const middleware = [
@@ -28,6 +29,7 @@ const App = ({ children }: Props) => (
     ))}
   >
     <span>
+      <FloatingButton />
       {children}
       <Tooltip />
     </span>
